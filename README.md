@@ -2,7 +2,9 @@
 
 Public write-up of my Proxmox homelab: an automated media server, a dev/test box for self-hosted apps, and a game server VM. Compose files for the media server are in this repo, ready to adapt.
 
-> Architecture diagram: _being redrawn_.
+![Homelab overview](docs/diagrams/homelab-overview.drawio.svg)
+
+_Diagram source: [docs/diagrams/](docs/diagrams/). Open the `.drawio.svg` files in [draw.io](https://app.diagrams.net) to edit; they render as-is on GitHub._
 
 ## Overview
 
@@ -22,7 +24,8 @@ Host hardware, resource allocation and storage are in [docs/proxmox.md](docs/pro
 .
 ├── README.md
 ├── docs/
-│   └── proxmox.md                    host hardware, guests, storage
+│   ├── proxmox.md                    host hardware, guests, storage
+│   └── diagrams/                     editable draw.io diagrams (.drawio.svg)
 ├── media-server/
 │   ├── README.md                     how the automation pipeline works
 │   ├── media-management-stack.yaml   Plex, Overseerr, Wizarr, Tautulli, Threadfin, FileFlows

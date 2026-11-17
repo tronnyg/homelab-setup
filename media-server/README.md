@@ -4,24 +4,9 @@ Ubuntu LXC with Docker and Portainer. Everything is split into two compose stack
 
 ## Pipeline
 
-```
-Overseerr (request) / Wizarr (invites)
-        │
-        ▼
-Sonarr (TV) / Radarr (movies) ◄── Profilarr (quality profiles)
-        │
-        ▼
-Prowlarr (indexers) ◄── FlareSolverr (Cloudflare bypass)
-        │
-        ▼
-qBittorrent ── runs inside gluetun (WireGuard VPN, kill switch)
-        │
-        ▼
-FileFlows (processing / transcoding, Intel iGPU)
-        │
-        ▼
-Plex ◄── Bazarr (subtitles)     Tautulli (stats)     Threadfin (IPTV)
-```
+![Media server architecture](../docs/diagrams/media-server.drawio.svg)
+
+In short: Overseerr requests go to Sonarr/Radarr, which search via Prowlarr and send torrents to qBittorrent (inside the gluetun VPN). Completed downloads are processed by FileFlows and served by Plex.
 
 Watchtower updates containers on a schedule (default: daily at midnight).
 
