@@ -1,0 +1,5 @@
+# Real env files hold secrets. Only *.example files are committed.
+.env
+.env.*
+!.env.*.example
+media-server/data/

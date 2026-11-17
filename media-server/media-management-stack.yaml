@@ -1,0 +1,105 @@
+# =============================================================================
+# Media management stack  (media-server LXC)
+# Plex + request/invite/stats/transcode tooling.
+# Config: .env.media-stack  (see .env.media-stack.example)
+# Run:    docker compose --env-file .env.media-stack -f media-management-stack.yaml up -d
+# =============================================================================
+
+services:
+  # --- Media server ---------------------------------------------------------
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host # Host networking: ports below are not published, Plex binds them directly (32400 web/API)
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=docker
+    volumes:
+      - plex-config:/config
+      - ${MEDIA_PATH}:${MEDIA_PATH}
+    devices:
+      - /dev/dri:/dev/dri # Intel iGPU for hardware transcoding
+    restart: unless-stopped
+
+  # --- Stats ------------------------------------------------------------------
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    network_mode: host # Web UI on 8181
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - tautulli-config:/config
+    restart: unless-stopped
+
+  # --- Requests & invites -------------------------------------------------------
+  overseerr:
+    image: lscr.io/linuxserver/overseerr:latest
+    container_name: overseerr
+    network_mode: host # Web UI on 5055
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - overseerr-config:/config
+    restart: unless-stopped
+
+  wizarr:
+    image: ghcr.io/wizarrrr/wizarr
+    container_name: wizarr
+    network_mode: host # Web UI on 5690
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DISABLE_BUILTIN_AUTH=${WIZARR_DISABLE_BUILTIN_AUTH}
+    volumes:
+      - wizarr-config:/data
+    restart: unless-stopped
+
+  # --- Live TV / IPTV -------------------------------------------------------------
+  threadfin:
+    image: fyb3roptik/threadfin
+    container_name: threadfin
+    ports:
+      - 34400:34400
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${THREADFIN_DATA_PATH}/conf:/home/threadfin/conf
+      - ${THREADFIN_DATA_PATH}/temp:/tmp/threadfin:rw
+    restart: unless-stopped
+
+  # --- Transcoding / file processing ------------------------------------------------
+  fileflows:
+    image: revenz/fileflows:stable
+    container_name: fileflows
+    ports:
+      - 19200:5000 # Web UI
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - BROWSER_START_DIR=${MEDIA_PATH}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - fileflows_data:/app/Data
+      - fileflows_logs:/app/Logs
+      - ${MEDIA_PATH}:${MEDIA_PATH}
+    devices:
+      - /dev/dri:/dev/dri # Intel iGPU for hardware transcoding
+    restart: unless-stopped
+
+volumes:
+  plex-config:
+  tautulli-config:
+  overseerr-config:
+  wizarr-config:
+  fileflows_data:
+  fileflows_logs:
